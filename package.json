@@ -1,0 +1,13 @@
+{
+  "name": "boutsrimes",
+  "version": "0.0.1",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "4.x",
+    "mongoose": "4.x",
+    "socket.io": "1.x"
+  }
+}
