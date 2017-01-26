@@ -1,16 +1,6 @@
 var socket = io();
 
-function initialize(results) {
-    var verses = results[0];
-    var lines = results[1];
-    verses.forEach(function(verse) {
-        verse.lines = [];
-        lines.forEach(function(line) {
-            if(line.verse == verse._id) {
-                verse.lines.push(line);
-            }
-        });
-    });
+function initialize(verses) {
     var str = "";
     var counter = 0;
     verses.forEach(function(verse, i) {
@@ -20,51 +10,9 @@ function initialize(results) {
             str += '<div class="row">';
         }
         str += '<div class="verse col-md-4">';
-        str += '<div class="well" style="text-align: center">';
 
-        //TODO: Add the id for the div wich contains the verse lines.
-        str += '<div style="display: inline-block; text-align: left">';
-
-        str += '<h3 class="text-center">';
-        str += verse.title;
-        str += '</h3>';
-
-        str += '<br />';
-
-        verse.lines.forEach(function (line) {
-            str += '<p>' + line.body + '</p>';
-        });
-
-        str += '</div>';
-
-        str += '<div class="input-group">';
-        str += '<input id="input-' + verse._id + '" type="text" class="form-control">';
-        str += '<span class="input-group-btn">';
-        str += '<button class="write btn btn-default" type="button" onclick="writeLine(\'';
-        str += verse._id;
-        str += '\')">Publish!</button>';
-        str += '</span>';
-        str += '</div>';
-
-        str += '<div style="display: inline-block; text-align: left">';
-
-        var residual = 4;
-
-        str += '<br />';
-
-        for(var i = 0; i < residual; i++) {
-            str += '<p>***</p>';
-        }
-
-        str += '</div>';
-
-        str += '<br />';
-        str += '<br />';
-        str += '<div class="text-right">';
-        str += '<span><i>id: ' + verse._id + '</i></span>';
-        str += '</div>';
-
-        str += '</div>';
+        str += renderVerse(verse);
+        
         str += '</div>';
 
         if(index == counter + 3 || index == verses.length) {
@@ -80,12 +28,69 @@ function initialize(results) {
 }
 
 function writeLine(verseId) {
+    //TODO: Check that verse property not saved in database
     socket.emit('write line', {
         body: $("#input-" + verseId).val(),
-        author: null,
         verse: verseId
     });
     //TODO: Refresh the verse view
+}
+
+function updateVerse(verse) {
+    $('#' + verse._id).html(renderVerse(verse));
+}
+
+//TODO: Remake it with writing structure first
+function renderVerse(verse) {
+    htmlString = '';
+
+    htmlString += '<div class="well" style="text-align: center">';
+
+    //TODO: Add the id for the div wich contains the verse lines.
+    htmlString += '<div style="display: inline-block; text-align: left">';
+
+    htmlString += '<h3 class="text-center">';
+    htmlString += verse.title;
+    htmlString += '</h3>';
+
+    htmlString += '<br />';
+
+    verse.lines.forEach(function (line) {
+        htmlString += '<p>' + line.body + '</p>';
+    });
+
+    htmlString += '</div>';
+
+    htmlString += '<div class="input-group">';
+    htmlString += '<input id="input-' + verse._id + '" type="text" class="form-control">';
+    htmlString += '<span class="input-group-btn">';
+    htmlString += '<button class="write btn btn-default" type="button" onclick="writeLine(\'';
+    htmlString += verse._id;
+    htmlString += '\')">Publish!</button>';
+    htmlString += '</span>';
+    htmlString += '</div>';
+
+    htmlString += '<div style="display: inline-block; text-align: left">';
+
+    var residual = 4;
+
+    htmlString += '<br />';
+
+    for(var i = 0; i < residual; i++) {
+        htmlString += '<p>***</p>';
+    }
+
+    htmlString += '</div>';
+
+    htmlString += '<br />';
+    htmlString += '<br />';
+    htmlString += '<div class="text-right">';
+    htmlString += '<span><i>id: ' + verse._id + '</i></span>';
+    htmlString += '</div>';
+
+    htmlString += '</div>';
+
+    return htmlString;
 }
 
 $(document).ready(function () {
@@ -93,16 +98,7 @@ $(document).ready(function () {
         initialize(results);
         
         socket.on('update verse', function(data) {
-             //updateVerse();
+             updateVerse();
         });
     });
-
-    // socket.emit('join author', {
-    //     name: "First One"
-    // });
-
-    // socket.emit('create verse', {
-    //     title: 'SEVEN',
-    //     author: '584b34df46006b1a7cc7fd66'
-    // });
-});
+} );

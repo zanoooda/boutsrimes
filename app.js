@@ -32,16 +32,16 @@ var authorSchema = new Schema({
 
 var lineSchema = new Schema({
   body: String,
-  verse: { type: mongoose.Schema.Types.ObjectId, ref: 'Verse' },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'Author', default: null},
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now() }
 });
 
-// TODO: Remove lines collection and to add to the verse Schema array of the lines. 
+//TODO: Remove lines collection and to add to the verse Schema array of the lines. 
 var verseSchema = new Schema({
   title: String,
+  lines: [],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'Author', default: null },
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now() }
 });
 
 var Author = mongoose.model('Author', authorSchema);
@@ -50,19 +50,8 @@ var Line = mongoose.model('Line', lineSchema);
 
 var io = require('socket.io')(server);
 io.on('connection', function (socket) {
-  async.parallel([
-    function (callback) {
-      Verse.find({}, function (error, verses) {
-        callback(error, verses);
-      });
-    },
-    function (callback) {
-      Line.find({}, function (error, lines) {
-        callback(error, lines);
-      });
-    }
-  ], function (error, results) {
-    socket.emit('initialize', results);
+  Verse.find({}, function(err, verses) {
+    socket.emit('initialize', verses);
   });
 
   socket.on('create verse', function (data) {
@@ -70,12 +59,25 @@ io.on('connection', function (socket) {
     verse.save();
   });
   socket.on('write line', function (data) {
-    var line = new Line(data);
-    line.save();
-    //TODO: Be shure that line saved (line.save() was executed synchronously).
-    //      emit to the all sockets but not currient to update verse.
+    Verse.update(
+      {_id: data.verse}, 
+      { $push: {
+          lines: new Line(data)
+        }
+      },
+      function(err, something) {
+        //TODO: Emit 'update verse' event
+
+        //TODO: use something
+
+        // Verse.findOne({_id: data.verse}, function(err, doc) {
+        //   socket.broadcast.emit('update verse', doc);
+        // });
+      }
+    );
   });
   socket.on('join author', function (data) {
+    // Method under construction
     var author = new Author(data);
     author.save();
   });
