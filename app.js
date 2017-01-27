@@ -2,7 +2,6 @@ var express = require('express');
 var path = require('path');
 var http = require('http');
 var mongoose = require('mongoose');
-var async = require('async');
 
 var app = express();
 
@@ -29,11 +28,11 @@ var Schema = mongoose.Schema;
 var authorSchema = new Schema({
   name: String
 });
-
+//TODO: date in UNIXtime
 var lineSchema = new Schema({
   body: String,
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'Author', default: null},
-  date: { type: Date, default: Date.now() }
+  date: { type: Date, default: Date.now }
 });
 
 //TODO: Remove lines collection and to add to the verse Schema array of the lines. 
@@ -41,7 +40,7 @@ var verseSchema = new Schema({
   title: String,
   lines: [],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'Author', default: null },
-  date: { type: Date, default: Date.now() }
+  date: { type: Date, default: Date.now }
 });
 
 var Author = mongoose.model('Author', authorSchema);
@@ -59,20 +58,13 @@ io.on('connection', function (socket) {
     verse.save();
   });
   socket.on('write line', function (data) {
-    Verse.update(
+    Verse.findOneAndUpdate(
       {_id: data.verse}, 
-      { $push: {
-          lines: new Line(data)
-        }
-      },
-      function(err, something) {
+      { $push: { lines: new Line(data) } },
+      { new: true },
+      function(err, verse) {
         //TODO: Emit 'update verse' event
-
-        //TODO: use something
-
-        // Verse.findOne({_id: data.verse}, function(err, doc) {
-        //   socket.broadcast.emit('update verse', doc);
-        // });
+        socket.broadcast.emit('update verse', verse);
       }
     );
   });

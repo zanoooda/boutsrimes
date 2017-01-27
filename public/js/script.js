@@ -9,7 +9,9 @@ function initialize(verses) {
         if(index == 1 || i % 3 == 0) {
             str += '<div class="row">';
         }
-        str += '<div class="verse col-md-4">';
+        str += '<div id="';
+        str += verse._id;
+        str += '" class="verse col-md-4">';
 
         str += renderVerse(verse);
         
@@ -30,7 +32,7 @@ function initialize(verses) {
 function writeLine(verseId) {
     //TODO: Check that verse property not saved in database
     socket.emit('write line', {
-        body: $("#input-" + verseId).val(),
+        body: $('#input-' + verseId).val(),
         verse: verseId
     });
     //TODO: Refresh the verse view
@@ -39,7 +41,6 @@ function writeLine(verseId) {
 function updateVerse(verse) {
     $('#' + verse._id).html(renderVerse(verse));
 }
-
 //TODO: Remake it with writing structure first
 function renderVerse(verse) {
     htmlString = '';
@@ -97,8 +98,22 @@ $(document).ready(function () {
     socket.on('initialize', function(results) {
         initialize(results);
         
-        socket.on('update verse', function(data) {
-             updateVerse();
+        socket.on('update verse', function(verse) {
+             updateVerse(verse);
         });
     });
-} );
+});
+
+// Console functions for debuging
+
+function createVerse(title) {
+    socket.emit('create verse', {
+        title: title
+    });
+}
+
+function joinAuthor(name) {
+    socket.emit('join author', {
+        name: name
+    });
+}
