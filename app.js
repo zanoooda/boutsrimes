@@ -13,8 +13,8 @@ app.get('/', function (req, res) {
 
 var server = http.createServer(app);
 
-server.listen(8080, '127.0.0.1', function () {
-  console.log('Server listening at localhost:8080');
+server.listen(8080, function () {
+  console.log('Server listening at port 8080');
 });
 
 //TODO: Understand what is this line means.
