@@ -58,15 +58,6 @@ io.on('connection', function (socket) {
     verse.save();
   });
   socket.on('write line', function (data) {
-    // Verse.findOneAndUpdate(
-    //   {_id: data.verse}, 
-    //   { $push: { lines: new Line(data) } },
-    //   { new: true },
-    //   function(err, verse) {
-    //     socket.broadcast.emit('update verse', verse);
-    //   }
-    // );
-
     Verse.findById(data.verse, function(err, verse) {
       if(err) {
         return;
